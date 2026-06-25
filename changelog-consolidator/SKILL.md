@@ -46,6 +46,42 @@ implementation detail (file names, commit hashes, GitLab/GitHub links, author
 names, "Reason:"/"Impact:" paragraphs) into the output — those belong in the
 source documents, not in the consolidated view.
 
+## Summarization Principles
+
+This skill generates release notes, not commit logs.
+
+Prioritize information density over completeness.
+
+Summarize changes from the perspective of released capabilities rather than implementation work.
+
+The goal is to answer:
+
+> What changed in this release?
+
+—not—
+
+> What changed in every commit?
+
+Merge related commits whenever they contribute to the same feature, subsystem, architectural improvement, or user-visible capability.
+
+Prefer feature-oriented summaries over commit-oriented summaries.
+
+Do NOT generate one output bullet for every source bullet.
+
+Avoid mentioning implementation artifacts unless they are the primary purpose of the change.
+
+Avoid summarizing around:
+
+- filenames
+- directories
+- classes
+- interfaces
+- hooks
+- configuration files
+- individual Vue components
+
+Instead, summarize the capability or improvement they collectively provide.
+
 ## Project Structure
 
 This is a VitePress documentation site with locale-based routing:
@@ -122,8 +158,7 @@ For every commit block in a source file, pull out:
 
 - the **date** as written (from the `## [hash] - YYYY-MM-DD` header)
 - the **category** (`Added`, `Changed`, `Fixed`, `Removed`)
-- the **substance of the change** — the title in parentheses at the start of
-  each bullet, plus the first sentence of the `Changes:` field
+- the **substance of the change** — primarily from the title in parentheses and the `Changes:` section, extracting only the information necessary to produce a high-level release summary.
 
 Ignore everything that is purely bookkeeping: commit hashes, author emails,
 GitLab commit links, `File:` paths, `Reason:` paragraphs, `Impact:` paragraphs,
@@ -141,80 +176,272 @@ normalization is needed. Watch for:
 - Entries with no real date — use your best judgment to place them near
   neighboring dated entries; never invent a fake precise date.
 
-### 5. Condense each entry into a category + a one-line description
+### 5. Consolidate Related Entries into High-Level Summaries
 
-Be aggressive about cutting detail, but do not lose the "what changed" meaning.
-Pick a category based on the gist of the original wording:
+This is a release note generation task, not a commit extraction task.
 
-- **Added** — new feature, new field, new integration, new page/component
-- **Changed** — modified behavior, updated wording/config/UI, migration, refactor
-- **Fixed** — bug fix, correction of broken behavior, typo fix
-- **Removed** — deleted/deprecated something
-- **Other** — anything that does not cleanly fit
+Multiple related commits should normally become one summary.
 
-**Example — this project's changelog format → condensed output:**
+Group changes by their functional purpose rather than where they happened in the codebase.
 
-> Input (from `docs/en/fund-front/changelog.md`):
->
-> ```
-> ### Changed
-> - (Capital Flow Config) Added payout channel selection column and refactored CSS syntax
->   - File: `src/views/capital/flow/config.vue`
->   - Changes: Added `payoutChannelId` column with select dropdown. Added `getPayoutChannelList()` method to load channel data. Changed CSS syntax from `/deep/` to `::v-deep` for Vue 3 compatibility.
->   - Reason: Flow configuration needs to display and select payout channels. `/deep/` syntax is deprecated in Vue 3.
->   - Impact: Users can select payout channels when editing flow configuration. CSS is compatible with Vue 3.
-> ```
+Prefer grouping by:
 
-> Condensed: category `Changed`, description `Capital flow config: added payout channel selection column, migrated /deep/ to ::v-deep for Vue 3 compatibility`
+- feature
+- subsystem
+- user-visible capability
+- architectural improvement
+- infrastructure
+- development tooling
 
-> Input:
->
-> ```
-> ### Fixed
-> - (Translation) Fixed typo in English translation for loan failure status
->   - File: `src/i18n/en.ts`
->   - Change: Changed value of key `channel.loanFailure` from "Loss Failed" to "Loan Failed"
->   - Reason: A typo caused the word "Loss" to be used instead of "Loan"
-> ```
+Only create separate summaries when the changes are clearly unrelated.
 
-> Condensed: category `Fixed`, description `English translation: corrected "Loss Failed" → "Loan Failed" typo for loan failure key`
+Each summary should answer:
 
-Notice that the file name, reason paragraph, author, hash, and link are all
-dropped entirely. Only the title in parentheses and the core change description
-survive.
+"What capability was added, changed, fixed, or removed?"
 
-### 6. Build a structured entries list
+instead of
 
-Collect everything into a simple list, one item per condensed change. Group
-entries by date since each date row in the output table gets a single version:
+"What files were modified?"
+
+Keep summaries concise while preserving the overall scope of the work.
+
+### Grouping Guidelines
+
+When several entries contribute to the same feature or release objective, summarize them as a single capability instead of listing implementation pieces.
+
+Examples:
+
+routing + menu + navigation
+
+→ Updated application navigation.
+
+API + Axios + service layer
+
+→ Added networking layer.
+
+Jenkins + build + deployment + environment
+
+→ Updated build and deployment infrastructure.
+
+components + hooks + utilities
+
+→ Added reusable frontend components and utilities.
+
+TypeScript + models + interfaces
+
+→ Added frontend data models.
+
+translations + i18n + locale
+
+→ Updated localization support.
+
+CRUD API + validation + models + routes
+
+→ Added <Feature Name> support.
+
+If a feature spans multiple categories (for example API, routing, models, UI, validation, localization), summarize it as a single feature whenever those changes were made to deliver the same capability.
+
+Do not group unrelated features together simply to reduce the number of bullets.
+
+Accuracy is more important than aggressive compression.
+
+### High-Level Summary Examples
+
+Bad
+
+Added:
+
+- Utility functions
+- State management
+- Router
+- Axios
+- Layout
+
+Good
+
+Added:
+
+- Implemented the core application architecture, including routing, state management, networking, and layouts.
+
+---
+
+Bad
+
+Added:
+
+- API service
+- Model
+- Route
+
+Good
+
+Added:
+
+- Added AutoSQLConfig feature, including API services, data models, validation, and routing.
+
+---
+
+Bad
+
+Changed:
+
+- Jenkinsfile
+- build.sh
+- pom.xml
+
+Good
+
+Changed:
+
+- Updated build and deployment infrastructure.
+
+---
+
+Bad
+
+Changed:
+
+- Translation files
+- Menu labels
+- Notification text
+
+Good
+
+Changed:
+
+- Updated localization resources and UI labels.
+
+---
+
+Bad
+
+Added:
+
+- Prize page
+- Rule page
+- Award page
+- Dictionary page
+
+Good
+
+Added:
+
+- Added core application pages and business features.
+
+### 6. Build a Structured Entries List
+
+After grouping related changes, build a structured list of consolidated summaries.
+
+Each entry should represent one meaningful release note rather than one source commit whenever possible.
+
+Group changes by:
+
+- feature
+- subsystem
+- technical area
+- infrastructure
+- user-visible capability
+
+before creating the final summary.
+
+Example:
 
 ```json
 [
   {
     "date": "2026-06-23",
     "version": "1.1",
-    "module": "fund-front",
+    "module": "activity-front",
     "category": "Changed",
-    "description": "Capital flow config: added payout channel selection column, migrated /deep/ to ::v-deep for Vue 3 compatibility"
+    "description": "Updated build and deployment infrastructure."
   },
   {
     "date": "2026-06-23",
     "version": "1.1",
-    "module": "activity-front",
-    "category": "Fixed",
-    "description": "SSO proxy helper: removed hardcoded zh-CN locale from error log timestamps"
-  },
-  {
-    "date": "2026-03-13",
-    "version": "1.2",
     "module": "fund-front",
     "category": "Added",
-    "description": "Pinned Node.js version via .nvmrc (v14.21.3) for consistent dev/CI builds"
+    "description": "Implemented the core application architecture."
   }
 ]
 ```
 
-Save this as `entries.json` in the working directory for reference and reuse.
+The entries list should contain consolidated release summaries, not individual commit summaries.
+
+### Summary Granularity
+
+Generate as many summaries as necessary to accurately describe the release.
+
+Prefer one summary for an entire feature rather than multiple summaries for its implementation pieces.
+
+Good examples:
+
+Added:
+
+- Added AutoSQLConfig feature, including API services, models, routing, and UI integration.
+
+Changed:
+
+- Updated production deployment pipeline.
+
+Added:
+
+- Implemented the core application architecture.
+
+Avoid summaries such as:
+
+Added:
+
+- Added API service.
+- Added router.
+- Added model.
+- Added validator.
+- Added Vue component.
+
+unless those changes belong to completely different features.
+
+### Summary Writing Style
+
+Summaries should describe outcomes rather than implementation.
+
+Prefer:
+
+- Added payment management feature.
+
+instead of
+
+- Added payment page.
+- Added payment API.
+- Added payment model.
+
+Prefer:
+
+- Updated deployment pipeline.
+
+instead of
+
+- Updated Jenkinsfile.
+- Updated pom.xml.
+- Updated build.sh.
+
+Write summaries as if they were release notes shown to product managers, QA engineers, or stakeholders rather than developers reviewing commits.
+
+Avoid using implementation-specific terminology unless it is widely recognized or represents the primary feature being delivered.
+
+Prefer describing business capabilities, platform capabilities, or architectural outcomes over internal technical details.
+
+### Category Selection
+
+Choose the category based on the primary outcome of the consolidated summary, not the wording of the original commits.
+
+Use the following guidelines:
+
+- **Added** — Introduces a new feature, capability, integration, page, component, or infrastructure.
+- **Changed** — Modifies or improves existing behavior, architecture, configuration, UI, performance, or development workflow.
+- **Fixed** — Corrects bugs, broken behavior, regressions, or incorrect functionality.
+- **Removed** — Removes or deprecates features, components, routes, or obsolete code.
+- **Other** — Use only when none of the above categories accurately describe the change.
+
+When multiple commits are merged into one summary, select the category that best represents the overall outcome of the grouped changes rather than the individual commit actions.
 
 ### 7. Render the final document
 
@@ -226,8 +453,10 @@ on its own line, followed by its bullets on subsequent lines. Use `<br>` tags
 for line breaks inside the table cell so the Markdown renders correctly:
 
 ```
-| date       | version | detail |
-|------------|---------|--------|
+
+| date | version | detail |
+| ---- | ------- | ------ |
+
 ```
 
 Write the output to `consolidated-changelog.md` at the project root:
@@ -235,10 +464,10 @@ Write the output to `consolidated-changelog.md` at the project root:
 ```markdown
 # Consolidated Changelog
 
-| date       | version | detail                                                                                                                                                                                                                                                                                                                                          |
-| ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-06-23 | 1.1     | fund-front<br>Changed: Capital flow config: added payout channel selection column, migrated /deep/ to ::v-deep for Vue 3 compatibility<br>Removed: CI/CD pipeline: dropped all Jenkins configuration files after migration to new system<br>activity-front<br>Fixed: SSO proxy helper: removed hardcoded zh-CN locale from error log timestamps |
-| 2026-03-13 | 1.2     | fund-front<br>Added: Pinned Node.js version via .nvmrc (v14.21.3) for consistent dev/CI builds (V1.2)<br>Changed: Header language UX: added direct click trigger on language label                                                                                                                                                              |
+| date       | version | detail                                                                                                                                                                                                                                                                                                      |
+| ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-23 | 1.1     | fund-front<br>Added: Added payment channel management feature.<br>Changed: Updated build and deployment infrastructure.<br>activity-front<br>Added: Added AutoSQLConfig feature, including API services, frontend models, validation, and routing.<br>Fixed: Improved localization resources and UI labels. |
+| 2026-03-13 | 1.2     | fund-front<br>Added: Improved development environment configuration and build consistency.<br>Changed: Enhanced header language switching experience.                                                                                                                                                       |
 ```
 
 Rules for the `detail` cell:
@@ -272,9 +501,9 @@ rather than hand-rolling a new format.
 - If two or more modules changed on the exact same date, each appears as its
   own name-line + bullet block inside the same `detail` cell — never merge
   different modules' bullets into one undifferentiated list.
-- Keep each bullet to roughly one sentence. If a module had many small related
-  commits on one date, it is fine to merge them into one bullet rather than
-  listing ten near-duplicate lines.
+- Keep each summary concise, typically one sentence, while preserving the overall capability delivered by the grouped changes.
 - When the module directories do not yet have the `-front` suffix, the
   consolidation will return zero modules. That is correct and expected behavior
   — the skill is designed to activate once the suffix convention is applied.
+- When uncertain whether multiple commits should be merged, prefer grouping them into one high-level release summary if they describe the same capability or feature.
+- Prefer fewer high-quality summaries over many low-level summaries when both accurately represent the same release.
