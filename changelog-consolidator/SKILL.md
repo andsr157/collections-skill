@@ -1,5 +1,5 @@
 ---
-name: module-changelog-consolidator
+name: changelog-consolidator
 description: >-
   Use when the user has changelog documents from multiple frontend modules
   in this VitePress documentation site (each under docs/en/<module>-front/changelog.md,
