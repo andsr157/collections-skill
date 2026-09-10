@@ -1,3 +1,8 @@
+---
+name: changelog-document
+description: Generate a structured Changelog Document from code changes, Git diffs, commits, or task descriptions, including metadata, summary, before/after comparison, category, and technical details. Use when the user asks to create, document, or explain a changelog document for a change.
+---
+
 # Panduan: Auto-Generate Changelog Document dari Analisa Perubahan (Format Markdown)
 
 Panduan ini merangkum konvensi template **Changelog Document** (Samir) DAN cara menganalisa perubahan (code diff, git log, atau deskripsi task) untuk otomatis mengisi template tersebut — tanpa perlu membuat Claude Skill penuh, cukup diikuti sebagai instruksi saat diminta membuat changelog.
